@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as djangoUser
 
-class NiniUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+class User(models.Model):
+    user = models.OneToOneField(djangoUser, on_delete=models.CASCADE)
     fullname = models.CharField(max_length=150, blank=True, null=True)
     food_reviews = models.IntegerField(default=0)
     clothing_reviews = models.IntegerField(default=0)
@@ -16,6 +16,10 @@ class Category(models.Model):
         ('clothing', 'Clothing'),
     )
     title = models.CharField(max_length=50, choices=CATEGORY, unique=True)
+
+    @property
+    def top_products(self):
+        return self.product_set.all().order_by('-rate')[: 5]
 
     def __str__(self):
         return self.title
@@ -39,9 +43,13 @@ class Product(models.Model):
         for img in gallery:
             urls.append(img.image.url)
         return urls
+    
+    @property
+    def related_products(self):
+        return Product.objects.filter(category=self.category).order_by('-rate')[:5]
 
     def __str__(self):
-        return self.title
+        return self.title + " - " + str(self.category)
     
 
 class ProductImage(models.Model):
@@ -58,23 +66,17 @@ class Review(models.Model):
     text     = models.CharField(max_length=1000)
     rate     = models.IntegerField()
     is_buyer = models.BooleanField()
-    creator  = models.ForeignKey(NiniUser, on_delete=models.SET_NULL, null=True)
+    creator  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     positive_likes =  models.IntegerField()
     negative_likes =  models.IntegerField()
+    
+    @property
+    def creator_fullname(self):
+        return self.creator.fullname
 
     @property
     def replies(self):
-        replies = Reply.objects.filter(review=self.pk)
-        replies_data = []
-        for reply in replies:
-            reply_data = {
-                'id'   : reply.pk,
-                'text' : reply.text,
-                'creator'    : reply.creator.fullname,
-                'creator_id' : reply.creator.pk,
-            }
-            replies_data.append(reply_data)
-        return replies_data
+        return Reply.objects.filter(review=self.pk)
 
     def __str__(self):
         return self.title + " - " + self.creator.fullname
@@ -82,7 +84,12 @@ class Review(models.Model):
 class Reply(models.Model):
     review  = models.ForeignKey(Review, on_delete=models.CASCADE)
     text    = models.CharField(max_length=200)
-    creator = models.ForeignKey(NiniUser, on_delete=models.SET_NULL, null=True)
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     
+    @property
+    def creator_fullname(self):
+        return self.creator.fullname
+
+
     def __str__(self):
         return self.review.title + " - " + str(self.id)
