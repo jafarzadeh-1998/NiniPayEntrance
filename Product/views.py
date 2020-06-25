@@ -42,6 +42,8 @@ def ProductList(request):
 
 def ProductDetail(request, pk):
     product = models.Product.objects.filter(pk=pk).first()
+    product.review_count += 1
+    product.save()
     if product:
         if product.category.title == 'Food':
             request.user.niniuser.food_reviews += 1
