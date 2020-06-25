@@ -65,15 +65,15 @@ def ProductDetail(request, pk):
         
         related_products =  models.Product.objects.filter(category=product.category).order_by('-rate')[:5]
         data["related_products"] = []
-        for suggested in related_products:
-            if suggested != product:
+        for related in related_products:
+            if related != product:
                 sgData = {
-                        "id"    : suggested.pk,
-                        "title" : suggested.title,
-                        "list_image_url" : suggested.images_url,
-                        "can_add_to_cart": suggested.can_add_to_cart,
-                        "sell_price"     : suggested.sell_price,
-                        "main_price"     : suggested.main_price,
+                        "id"    : related.pk,
+                        "title" : related.title,
+                        "list_image_url" : related.images_url,
+                        "can_add_to_cart": related.can_add_to_cart,
+                        "sell_price"     : related.sell_price,
+                        "main_price"     : related.main_price,
                     }
                 data['related_products'].append(sgData)
         food_reviews     = request.user.niniuser.food_reviews
@@ -121,7 +121,7 @@ def ProductReviewList(request, pk):
                 'creator_id' : review.creator.pk,
                 'positive_likes'  : review.positive_likes, 
                 'negative_likes'  : review.negative_likes, 
-                'replys' : review.replyes, 
+                'replys' : review.replies, 
             }
             data['reviews'].append(review_data)
     

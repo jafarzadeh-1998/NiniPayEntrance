@@ -63,18 +63,18 @@ class Review(models.Model):
     negative_likes =  models.IntegerField()
 
     @property
-    def replyes(self):
-        replyes = Reply.objects.filter(review=self.pk)
-        replyes_data = []
-        for reply in replyes:
+    def replies(self):
+        replies = Reply.objects.filter(review=self.pk)
+        replies_data = []
+        for reply in replies:
             reply_data = {
                 'id'   : reply.pk,
                 'text' : reply.text,
                 'creator'    : reply.creator.fullname,
                 'creator_id' : reply.creator.pk,
             }
-            replyes_data.append(reply_data)
-        return replyes_data
+            replies_data.append(reply_data)
+        return replies_data
 
     def __str__(self):
         return self.title + " - " + self.creator.fullname
